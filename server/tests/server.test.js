@@ -1,12 +1,20 @@
 var request = require('supertest');
 var expect = require('expect');
-
+var mocha = require('mocha');
 var {app} = require('./../server');
 var {Todo} = require('./../models/todo');
 
+const {ObjectID} = require('mongodb');
+
 const todos = [
-    {text: "First test todo"},
-    {text: "Second test todo"}
+    {
+        _id: new ObjectID(),
+        text: "First test todo"
+    },
+    {
+        _id: new ObjectID(),
+        text: "Second test todo"
+    }
 ]
 
 beforeEach( (done) => {
@@ -72,14 +80,35 @@ describe('GET /todos', () => {
 })
 
 describe('GET /todos:id', () => {
+    var id = todos[0]._id.toHexString();
+
+    it('should send a 404 when ID is invalid', (done) => {
+        request(app)
+        .get(`/todos/123`)
+        .expect(404)
+        .expect( (res) => {
+            expect(res.body).toNotExist;
+        })
+        .end(done)
+    })
+
+    it('should send a 404 when ID couldnt be found', (done) => {
+        request(app)
+        .get(`/todos/${(new ObjectID()).toHexString}`)
+        .expect(404)
+        .expect( (res) => {
+            expect(res.body).toNotExist;
+        })
+        .end(done)
+    })
+
     it('should get a todo by ID', (done) => {
         request(app)
-        .get('/todos/5b5ce63941cc153eb86597a6')
+        .get(`/todos/${id}`)
         .expect(200)
         .expect( (res) => {
-            expect(res.body.todo).toExist();
+            expect(res.body.todo.text).toBe(todos[0].text);
         })
         .end(done);
     })
 })
-
