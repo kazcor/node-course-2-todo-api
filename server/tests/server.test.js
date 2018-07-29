@@ -71,3 +71,15 @@ describe('GET /todos', () => {
     })
 })
 
+describe('GET /todos:id', () => {
+    it('should get a todo by ID', (done) => {
+        request(app)
+        .get('/todos/5b5ce63941cc153eb86597a6')
+        .expect(200)
+        .expect( (res) => {
+            expect(res.body.todo).toExist();
+        })
+        .end(done);
+    })
+})
+
