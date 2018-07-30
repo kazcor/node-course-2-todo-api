@@ -1,6 +1,7 @@
 //libs
 var express = require('express');
 var bodyParser = require('body-parser');
+var _ = require('lodash');
 //local
 var {mongoose} = require('./db/mongoose');
 var {Todo} = require('./models/todo');
@@ -66,6 +67,34 @@ app.delete('/todos/:id', (req, res) => {
         return res.send({todo: todo});
     }).catch( (e) => {
         res.status(400).send(e);
+    })
+})
+
+app.patch('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    //only pick the params user is allowed to update
+    var body = _.pick(req.body, ['text', 'completed']);
+
+    if(!ObjectID.isValid(id)){
+        return res.status(404).send();
+    }
+
+    //if user sets completed to true get a timestamp
+    //otherwise set it to false and time to null
+    if (_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime();
+    } else {
+        body.completed = false;
+        body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id,{$set: body,}, {new: true}).then( (todo) => {
+        if(!todo){
+            return res.status(404).send();
+        }
+        res.send({todo: todo});
+    }).catch( (e) => {
+        return res.status(400).send();
     })
 })
 
