@@ -1,6 +1,5 @@
 var request = require('supertest');
 var expect = require('expect');
-var mocha = require('mocha');
 var {app} = require('./../server');
 var {Todo} = require('./../models/todo');
 
@@ -110,5 +109,44 @@ describe('GET /todos:id', () => {
             expect(res.body.todo.text).toBe(todos[0].text);
         })
         .end(done);
+    })
+})
+
+describe('DELETE /todos/:id', () => {
+    var id = todos[0]._id.toHexString();
+
+    it('should send 404 if id is invalid', (done) => {
+        request(app)
+        .delete(`/todos/123`)
+        .expect(404)
+        .end(done)
+    })
+
+    it('should send 404 if todo doesnt exist', (done) => {
+        request(app)
+        .delete(`/todos/${(new ObjectID()).toHexString}`)
+        .expect(404)
+        .end(done)
+    })
+
+    it('should delete and return a todo by id', (done) =>{
+        request(app)
+        .delete(`/todos/${id}`)
+        .expect(200)
+        .expect( (res) => {
+            expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end( (err, res) => {
+            if(err){
+                return done(err)
+            }
+
+            Todo.findById(id).then( (todo) => {
+                expect(todo).toNotExist;
+                done();
+            }).catch((e) =>{
+                return done(e);
+            })
+        });
     })
 })
