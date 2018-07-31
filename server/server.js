@@ -1,3 +1,6 @@
+
+//env config
+var config = require('./config/config.js');
 //libs
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -9,7 +12,7 @@ var {User} = require('./models/user');
 var {ObjectID} = require('mongodb');
 
 var app = express();
-var port = process.env.PORT || 3000;
+var port = process.env.PORT;
 
 //allows to send JSON to express {text: "smth"} etc
 app.use(bodyParser.json());
